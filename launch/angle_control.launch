@@ -1,0 +1,43 @@
+<launch>
+
+  <node pkg="lab1" name="balboa_serial" type="balboa_serial.py"/>
+
+  <node pkg="lab1" name="controlled_drive" type="controlled_drive.py"/>
+    <param name="distance/tar/left" type="double" value="0.0"/>
+    <param name="distance/tar/right" type="double" value="0.0"/>
+    <param name="angle/target" type="double" value="0.0"/>
+
+  <remap from="/subscribe" to="/dist"/>
+  <remap from="/control" to="/dist_control"/>
+  <node pkg="lab1" name="dist_pid" type="pid.py"/>
+    <!--These values have been tested and work pretty well-->
+    <param name="distance/P" type="double" value="0.0"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.0"/>
+
+  <remap from="/subscribe" to="/ang"/>
+  <remap from="/control" to="/ang_control"/>
+  <node pkg="lab1" name="ang_pid" type="pid.py"/>
+    <!--These values might not need tuning-->
+    <param name="angle/P" type="double" value="0.0"/>
+    <param name="angle/I" type="double" value="0.0"/>
+    <param name="angle/D" type="double" value="0.0"/>
+
+  <node pkg="lab1" name="ang_vel" type="ang_vel.py"/>
+    <param name="angle_vel/target" type="double" value="90.0"/>
+
+  <remap from="/subscribe" to="/ang_vel"/>
+  <remap from="/control" to="/ang_vel_control"/>
+  <node pkg="lab1" name="ang_vel_pid" type="pid.py"/>
+    <param name="angle_vel/P" type="double" value="0.17"/>
+    <param name="angle_vel/I" type="double" value="0.0"/>
+    <param name="angle_vel/D" type="double" value="0.0"/>
+
+  <node pkg="lab1" name="sum" type="sum.py"/>
+
+  <node pkg="turtlesim" name="turtle_teleop_key" type="turtle_teleop_key"/>
+
+  <node pkg="lab1" name="pid_remote_drive" type="pid_remote_drive.py"/>
+
+
+</launch>
