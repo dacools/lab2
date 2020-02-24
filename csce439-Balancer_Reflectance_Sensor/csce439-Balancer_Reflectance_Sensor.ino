@@ -30,7 +30,6 @@
 #include <LSM6.h>
 #include "Balance.h"
 
-Balboa32U4ButtonC buttonC;
 Balboa32U4LineSensors lineSensors;
 LSM6 imu;
 Balboa32U4Motors motors;
@@ -296,7 +295,7 @@ void printReadingsToSerial()
   Serial.print(buffer);
 }
 
-void updateLinesSnsors(){
+void updateLineSensors(){
   static uint16_t lastSampleTime = 0;
 
   if ((uint16_t)(millis() - lastSampleTime) >= 100)
