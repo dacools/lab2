@@ -296,7 +296,7 @@ void printReadingsToSerial()
   Serial.print(buffer);
 }
 
-void processDataFromROS(){
+void updateLinesSnsors(){
   static uint16_t lastSampleTime = 0;
 
   if ((uint16_t)(millis() - lastSampleTime) >= 100)
@@ -331,7 +331,7 @@ void loop()
 
   sendDataToROS();
   processDataFromROS();
-  updatelinesensors();
+  updateLineSensors();
 
 /*
   if (isBalancing())
