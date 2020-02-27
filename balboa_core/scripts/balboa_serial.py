@@ -4,8 +4,6 @@ import serial
 import sys
 import rospy
 from std_msgs.msg import UInt8
-# from balboa_core.msg import balboaLL
-# from balboa_core.msg import balboaMotorSpeeds
 from lab2.msg import balboaLL
 from lab2.msg import balboaMotorSpeeds
 
@@ -87,8 +85,6 @@ class TheNode(object):
       msg.driveRight = self.readFourByteAndChecksum()
       msg.speedLeft = self.readFourByteAndChecksum()
       msg.speedRight = self.readFourByteAndChecksum()
-      msg.distanceLeft = self.readFourByteAndChecksum()
-      msg.distanceRight = self.readFourByteAndChecksum()
       msg.encoderCountLeft = self.readFourByteAndChecksum()
       msg.encoderCountRight = self.readFourByteAndChecksum()
       msg.sensor1 = self.readFourByteAndChecksum()
