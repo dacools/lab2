@@ -21,36 +21,36 @@ def parse_balboa_msg(data, self):
             self.map[i] = 0
 
     # update mapPacket message with map values
-    self.col.row1 = self.map[0]
-    self.col.row2 = self.map[1]
-    self.col.row3 = self.map[2]
-    self.col.row4 = self.map[3]
-    self.col.row5 = self.map[4]
+    self.column.row1 = self.map[0]
+    self.column.row2 = self.map[1]
+    self.column.row3 = self.map[2]
+    self.column.row4 = self.map[3]
+    self.column.row5 = self.map[4]
 
     # publish mapPacket
-    self.mapPub.publish(self.col)
+    self.mapPub.publish(self.column)
 
 class TheNode(object):
-  # This class holds the rospy logic for sending line sensor results 
-  # based on a published balboa message and user input 
+    # This class holds the rospy logic for sending line sensor results 
+    # based on a published balboa message
 
-  def __init__(self):
+    def __init__(self):
 
-    rospy.init_node('line_sensor') # intialize node
-    
-    # initialize publisher node for map packets
-    self.mapPub = rospy.Publisher('/mapping', mapPacket, queue_size=10)
+        rospy.init_node('line_sensor') # intialize node
 
-    self.threshold = rospy.get_param('threshold') # init line threshold
-    self.map = [0, 0, 0, 0, 0] # init map array
-    self.s = [0, 0, 0, 0, 0] # init sensor array
-    self.col = mapPacket() # init default mapPacket message
+        # initialize publisher node for map packets
+        self.mapPub = rospy.Publisher('/mapping', mapPacket, queue_size=10)
 
-  def main_loop(self):
-    # initialize subscriber node for messages from balboa robot
-    rospy.Subscriber('balboaLL', balboaLL, parse_balboa_msg, self)
+        self.threshold = rospy.get_param('threshold') # init line threshold
+        self.map = [0, 0, 0, 0, 0] # init map array
+        self.s = [0, 0, 0, 0, 0] # init sensor array
+        self.column = mapPacket() # init default mapPacket message
 
-    rospy.spin() # wait for messages
+    def main_loop(self):
+        # initialize subscriber node for messages from balboa robot
+        rospy.Subscriber('balboaLL', balboaLL, parse_balboa_msg, self)
+
+        rospy.spin() # wait for messages
 
 if __name__ == '__main__':
     try:
