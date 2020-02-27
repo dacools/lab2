@@ -38,18 +38,13 @@ Balboa32U4Buzzer buzzer;
 Balboa32U4ButtonA buttonA;
 Balboa32U4ButtonB buttonB;
 Balboa32U4ButtonC buttonC;
-
-// Reflectance Sensors
-#include <Balboa32U4.h>
-
-//Balboa32U4ButtonC buttonC;
 Balboa32U4LineSensors lineSensors;
 
+// Reflectance Sensors
 const uint8_t SensorCount = 5;
 uint16_t sensorValues[SensorCount];
 
 bool useEmitters = true;
-
 
 void setup()
 {
@@ -64,8 +59,6 @@ void setup()
   
   Serial.begin(57600);
   Serial.println("Done starting up.");
-
-
 
   // Set up and configure the reflectance sensors
   lineSensors.setCenterAligned();
@@ -139,20 +132,21 @@ void standUp()
   balanceResetEncoders();
 }
 
-
 /**
  * Send debug data over the serial port in human readable format
  **/
 void sendDebugData(){
  uint32_t currentMS = millis();
  static uint32_t lastMS = 0;
-  uint32_t sensor1 = sensorValues[0];
-  uint32_t sensor2 = sensorValues[1];
-  uint32_t sensor3 = sensorValues[2];
-  uint32_t sensor4 = sensorValues[3];
-  uint32_t sensor5 = sensorValues[4];
+
  //Only run this every once in a while.
  if((currentMS - lastMS) < 2000) return;
+
+ uint32_t sensor1 = sensorValues[0];
+ uint32_t sensor2 = sensorValues[1];
+ uint32_t sensor3 = sensorValues[2];
+ uint32_t sensor4 = sensorValues[3];
+ uint32_t sensor5 = sensorValues[4];
 
  Serial.println("\r\n----");
  Serial.print("Millis: "); Serial.println(millis());
@@ -164,8 +158,6 @@ void sendDebugData(){
  Serial.print(" r: "); Serial.println(driveRight);
  Serial.print("Speed l: "); Serial.print(speedLeft);
  Serial.print(" r: "); Serial.println(speedRight);
- Serial.print("Dist l: "); Serial.print(distanceLeft);
- Serial.print(" r: "); Serial.println(distanceRight);
  Serial.print("Counts l: "); Serial.print(encoders.getCountsLeft());
  Serial.print(" r: "); Serial.println(encoders.getCountsRight());
  Serial.print(" Sensor 1: ");Serial.println(sensor1);
@@ -173,11 +165,6 @@ void sendDebugData(){
  Serial.print(" 3: ");Serial.println(sensor3);
  Serial.print(" 4: ");Serial.println(sensor4);
  Serial.print(" 5: ");Serial.println(sensor5);
-// Serial.print(" Sensor 1: ");Serial.println(sensorValues[0]);
-// Serial.print(" 2: ");Serial.println(sensorValues[1]);
-// Serial.print(" 3: ");Serial.println(sensorValues[2]);
-// Serial.print(" 4: ");Serial.println(sensorValues[3]);
-// Serial.print(" 5: ");Serial.println(sensorValues[4]);
 
  lastMS = currentMS;
 }
@@ -207,14 +194,16 @@ void sendSignedInt32MSBAndUpdateChecksum(int32_t val, uint8_t *checksum){
 void sendDataToROS(){
  uint32_t currentMS = millis();
  static uint32_t lastMS = 0;
+
+ //Only run this every once in a while.
+ //N.B. there will be rollovers every ~65sec, but shouldn't be an issue
+ if((currentMS - lastMS) < 100) return;
+
   uint32_t sensor1 = sensorValues[0];
   uint32_t sensor2 = sensorValues[1];
   uint32_t sensor3 = sensorValues[2];
   uint32_t sensor4 = sensorValues[3];
   uint32_t sensor5 = sensorValues[4];
- //Only run this every once in a while.
- //N.B. there will be rollovers every ~65sec, but shouldn't be an issue
- if((currentMS - lastMS) < 100) return;
 
   //Start out with the checksum non-zero
   uint8_t checksum = 0xCD;
@@ -230,8 +219,6 @@ void sendDataToROS(){
   sendSignedInt32MSBAndUpdateChecksum(driveRight,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(speedLeft,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(speedRight,&checksum);
-  sendSignedInt32MSBAndUpdateChecksum(distanceLeft,&checksum);
-  sendSignedInt32MSBAndUpdateChecksum(distanceRight,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(encoders.getCountsLeft(),&checksum);
   sendSignedInt32MSBAndUpdateChecksum(encoders.getCountsRight(),&checksum);
   sendSignedInt32MSBAndUpdateChecksum(sensor1,&checksum);
@@ -239,12 +226,6 @@ void sendDataToROS(){
   sendSignedInt32MSBAndUpdateChecksum(sensor3,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(sensor4,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(sensor5,&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[0],&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[1],&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[2],&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[3],&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[4],&checksum);
-//  sendSignedInt32MSBAndUpdateChecksum(useEmitters ? 'E' : 'e',&checksum);
 
   /* //Some unit tests
   sendSignedInt32MSBAndUpdateChecksum(0,&checksum);
@@ -315,21 +296,7 @@ void processDataFromROS(){
   
 }
 
-void printReadingsToSerial()
-{
-  char buffer[80];
-  sprintf(buffer, "%4d %4d %4d %4d %4d %c\n",
-    sensorValues[0],
-    sensorValues[1],
-    sensorValues[2],
-    sensorValues[3],
-    sensorValues[4],
-    useEmitters ? 'E' : 'e'
-  );
-  Serial.print(buffer);
-}
-
-// Update the reflectance sensors TODO 
+// Update the reflectance sensors
 void QTRSensorUpdate(){
     static uint16_t lastSampleTime = 0;
 
@@ -339,17 +306,7 @@ void QTRSensorUpdate(){
 
     // Read the line sensors.
     lineSensors.read(sensorValues, useEmitters ? QTRReadMode::On : QTRReadMode::Off);
-
-    // Send the results to the LCD and to the serial monitor.
-//    printReadingsToSerial();
   }
-
-  // If button C is pressed, toggle the state of the emitters.
-  if (buttonC.getSingleDebouncedPress())
-  {
-    useEmitters = !useEmitters;
-  }
-
 }
 
 void loop()
@@ -366,7 +323,6 @@ void loop()
 
   sendDataToROS();
   processDataFromROS();
-
 
 /*
   if (isBalancing())
