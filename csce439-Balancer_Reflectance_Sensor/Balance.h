@@ -107,11 +107,11 @@ extern int32_t distanceRight;
 extern int32_t speedRight;
 extern int32_t driveRight;
 
-
 // These variables must be defined in your sketch.
 extern LSM6 imu;
 extern Balboa32U4Motors motors;
 extern Balboa32U4Encoders encoders;
+extern Balboa32U4LineSensors lineSensors;
 
 // Call this in your setup() to initialize and calibrate the IMU.
 void balanceSetup();
