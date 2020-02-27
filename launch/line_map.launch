@@ -1,0 +1,9 @@
+<launch>
+
+  <node pkg="lab2" name="balboa_serial" type="balboa_serial.py"/>
+
+  <node pkg="lab2" name="line_sensor" type="line_sensor.py"/>
+    <param name="threshold" type="double" value="1000"/>
+
+
+</launch>
