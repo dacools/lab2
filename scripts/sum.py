@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import rospy
-from lab1.msg import balboaMotorSpeeds # import motor speed message
+from lab2.msg import balboaMotorSpeeds # import motor speed message
 from std_msgs.msg import Header # import header message
-from lab1.msg import pid_output # import pid_output message
+from lab2.msg import pid_output # import pid_output message
 
 def parse_dist_msg(data, self):
     self.sender = data.source # unpack sender
