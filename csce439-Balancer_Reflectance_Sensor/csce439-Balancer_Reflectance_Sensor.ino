@@ -40,9 +40,15 @@ Balboa32U4ButtonB buttonB;
 Balboa32U4ButtonC buttonC;
 
 // Reflectance Sensors
-QTRSensors qtr;
-const uint8_t SensorCount = 8;
+#include <Balboa32U4.h>
+
+//Balboa32U4ButtonC buttonC;
+Balboa32U4LineSensors lineSensors;
+
+const uint8_t SensorCount = 5;
 uint16_t sensorValues[SensorCount];
+
+bool useEmitters = true;
 
 
 void setup()
@@ -62,41 +68,7 @@ void setup()
 
 
   // Set up and configure the reflectance sensors
-  qtr.setTypeRC();
-  qtr.setSensorPins((const uint8_t[]){3, 4, 5, 6, 7, 8, 9, 10}, SensorCount);
-  qtr.setEmitterPin(2);
-
-  delay(500);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH); // turn on Arduino's LED to indicate we are in calibration mode
-
-  // 2.5 ms RC read timeout (default) * 10 reads per calibrate() call
-  // = ~25 ms per calibrate() call.
-  // Call calibrate() 400 times to make calibration take about 10 seconds.
-  for (uint16_t i = 0; i < 400; i++)
-  {
-    qtr.calibrate();
-  }
-  digitalWrite(LED_BUILTIN, LOW); // turn off Arduino's LED to indicate we are through with calibration
-
-  // print the calibration minimum values measured when emitters were on
-  Serial.begin(9600);
-  for (uint8_t i = 0; i < SensorCount; i++)
-  {
-    Serial.print(qtr.calibrationOn.minimum[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-
-  // print the calibration maximum values measured when emitters were on
-  for (uint8_t i = 0; i < SensorCount; i++)
-  {
-    Serial.print(qtr.calibrationOn.maximum[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-  Serial.println();
-  delay(1000);
+  lineSensors.setCenterAligned();
 }
 
 const char song[] PROGMEM =
@@ -174,6 +146,11 @@ void standUp()
 void sendDebugData(){
  uint32_t currentMS = millis();
  static uint32_t lastMS = 0;
+  uint32_t sensor1 = sensorValues[0];
+  uint32_t sensor2 = sensorValues[1];
+  uint32_t sensor3 = sensorValues[2];
+  uint32_t sensor4 = sensorValues[3];
+  uint32_t sensor5 = sensorValues[4];
  //Only run this every once in a while.
  if((currentMS - lastMS) < 2000) return;
 
@@ -191,6 +168,16 @@ void sendDebugData(){
  Serial.print(" r: "); Serial.println(distanceRight);
  Serial.print("Counts l: "); Serial.print(encoders.getCountsLeft());
  Serial.print(" r: "); Serial.println(encoders.getCountsRight());
+ Serial.print(" Sensor 1: ");Serial.println(sensor1);
+ Serial.print(" 2: ");Serial.println(sensor2);
+ Serial.print(" 3: ");Serial.println(sensor3);
+ Serial.print(" 4: ");Serial.println(sensor4);
+ Serial.print(" 5: ");Serial.println(sensor5);
+// Serial.print(" Sensor 1: ");Serial.println(sensorValues[0]);
+// Serial.print(" 2: ");Serial.println(sensorValues[1]);
+// Serial.print(" 3: ");Serial.println(sensorValues[2]);
+// Serial.print(" 4: ");Serial.println(sensorValues[3]);
+// Serial.print(" 5: ");Serial.println(sensorValues[4]);
 
  lastMS = currentMS;
 }
@@ -220,6 +207,11 @@ void sendSignedInt32MSBAndUpdateChecksum(int32_t val, uint8_t *checksum){
 void sendDataToROS(){
  uint32_t currentMS = millis();
  static uint32_t lastMS = 0;
+  uint32_t sensor1 = sensorValues[0];
+  uint32_t sensor2 = sensorValues[1];
+  uint32_t sensor3 = sensorValues[2];
+  uint32_t sensor4 = sensorValues[3];
+  uint32_t sensor5 = sensorValues[4];
  //Only run this every once in a while.
  //N.B. there will be rollovers every ~65sec, but shouldn't be an issue
  if((currentMS - lastMS) < 100) return;
@@ -242,6 +234,17 @@ void sendDataToROS(){
   sendSignedInt32MSBAndUpdateChecksum(distanceRight,&checksum);
   sendSignedInt32MSBAndUpdateChecksum(encoders.getCountsLeft(),&checksum);
   sendSignedInt32MSBAndUpdateChecksum(encoders.getCountsRight(),&checksum);
+  sendSignedInt32MSBAndUpdateChecksum(sensor1,&checksum);
+  sendSignedInt32MSBAndUpdateChecksum(sensor2,&checksum);
+  sendSignedInt32MSBAndUpdateChecksum(sensor3,&checksum);
+  sendSignedInt32MSBAndUpdateChecksum(sensor4,&checksum);
+  sendSignedInt32MSBAndUpdateChecksum(sensor5,&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[0],&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[1],&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[2],&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[3],&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(sensorValues[4],&checksum);
+//  sendSignedInt32MSBAndUpdateChecksum(useEmitters ? 'E' : 'e',&checksum);
 
   /* //Some unit tests
   sendSignedInt32MSBAndUpdateChecksum(0,&checksum);
@@ -312,23 +315,40 @@ void processDataFromROS(){
   
 }
 
+void printReadingsToSerial()
+{
+  char buffer[80];
+  sprintf(buffer, "%4d %4d %4d %4d %4d %c\n",
+    sensorValues[0],
+    sensorValues[1],
+    sensorValues[2],
+    sensorValues[3],
+    sensorValues[4],
+    useEmitters ? 'E' : 'e'
+  );
+  Serial.print(buffer);
+}
+
 // Update the reflectance sensors TODO 
 void QTRSensorUpdate(){
-  // read calibrated sensor values and obtain a measure of the line position
-  // from 0 to 5000 (for a white line, use readLineWhite() instead)
-  uint16_t position = qtr.readLineBlack(sensorValues);
+    static uint16_t lastSampleTime = 0;
 
-  // print the sensor values as numbers from 0 to 1000, where 0 means maximum
-  // reflectance and 1000 means minimum reflectance, followed by the line
-  // position
-  for (uint8_t i = 0; i < SensorCount; i++)
+  if ((uint16_t)(millis() - lastSampleTime) >= 100)
   {
-    Serial.print(sensorValues[i]);
-    Serial.print('\t');
-  }
-  Serial.println(position);
+    lastSampleTime = millis();
 
-  delay(250);
+    // Read the line sensors.
+    lineSensors.read(sensorValues, useEmitters ? QTRReadMode::On : QTRReadMode::Off);
+
+    // Send the results to the LCD and to the serial monitor.
+//    printReadingsToSerial();
+  }
+
+  // If button C is pressed, toggle the state of the emitters.
+  if (buttonC.getSingleDebouncedPress())
+  {
+    useEmitters = !useEmitters;
+  }
 
 }
 

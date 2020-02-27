@@ -6,8 +6,8 @@ import rospy
 from std_msgs.msg import UInt8
 # from balboa_core.msg import balboaLL
 # from balboa_core.msg import balboaMotorSpeeds
-from lab1.msg import balboaLL
-from lab1.msg import balboaMotorSpeeds
+from lab2.msg import balboaLL
+from lab2.msg import balboaMotorSpeeds
 
 class TheNode(object):
   '''Class to communicate with the balboa robot. Carrick Detweiler 2020'''
@@ -91,6 +91,12 @@ class TheNode(object):
       msg.distanceRight = self.readFourByteAndChecksum()
       msg.encoderCountLeft = self.readFourByteAndChecksum()
       msg.encoderCountRight = self.readFourByteAndChecksum()
+      msg.sensor1 = self.readFourByteAndChecksum()
+      msg.sensor2 = self.readFourByteAndChecksum()
+      msg.sensor3 = self.readFourByteAndChecksum()
+      msg.sensor4 = self.readFourByteAndChecksum()
+      msg.sensor5 = self.readFourByteAndChecksum()
+      # msg.sensorState = self.readFourByteAndChecksum()
 
 
       # print("~~~~~~~")

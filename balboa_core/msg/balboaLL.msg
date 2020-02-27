@@ -13,4 +13,9 @@ int32 distanceLeft
 int32 distanceRight
 int32 encoderCountLeft
 int32 encoderCountRight
+int32 sensor1
+int32 sensor2
+int32 sensor3
+int32 sensor4
+int32 sensor5
 
