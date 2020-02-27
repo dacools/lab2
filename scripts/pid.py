@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from lab1.msg import pid_input # import pid_input message
-from lab1.msg import pid_output # import pid_output message
+from lab2.msg import pid_input # import pid_input message
+from lab2.msg import pid_output # import pid_output message
 
 def controller(data, self):
     source = data.source # unpack message source
