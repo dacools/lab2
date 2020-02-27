@@ -29,9 +29,8 @@
 #include <Wire.h>
 #include <LSM6.h>
 #include "Balance.h"
+#include <QTRSensors.h>
 
-Balboa32U4ButtonC buttonC;
-Balboa32U4LineSensors lineSensors;
 LSM6 imu;
 Balboa32U4Motors motors;
 Balboa32U4Encoders encoders;
@@ -40,9 +39,10 @@ Balboa32U4ButtonA buttonA;
 Balboa32U4ButtonB buttonB;
 Balboa32U4ButtonC buttonC;
 
-const uint8_t SensorCount = 5;
+// Reflectance Sensors
+QTRSensors qtr;
+const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
-bool useEmitters = true;
 
 
 void setup()
@@ -59,12 +59,44 @@ void setup()
   Serial.begin(57600);
   Serial.println("Done starting up.");
 
-  // This program assumes your sensors are mounted in the edge-aligned
-  // configuration (CTRL on pin 5). If you are using the sensors in the
-  // center-aligned configuration (CTRL on pin 12), then comment out the call
-  // to setEdgeAligned() and uncomment the call to setCenterAligned().
-  //  lineSensors.setEdgeAligned();
-   lineSensors.setCenterAligned();
+
+
+  // Set up and configure the reflectance sensors
+  qtr.setTypeRC();
+  qtr.setSensorPins((const uint8_t[]){3, 4, 5, 6, 7, 8, 9, 10}, SensorCount);
+  qtr.setEmitterPin(2);
+
+  delay(500);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // turn on Arduino's LED to indicate we are in calibration mode
+
+  // 2.5 ms RC read timeout (default) * 10 reads per calibrate() call
+  // = ~25 ms per calibrate() call.
+  // Call calibrate() 400 times to make calibration take about 10 seconds.
+  for (uint16_t i = 0; i < 400; i++)
+  {
+    qtr.calibrate();
+  }
+  digitalWrite(LED_BUILTIN, LOW); // turn off Arduino's LED to indicate we are through with calibration
+
+  // print the calibration minimum values measured when emitters were on
+  Serial.begin(9600);
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    Serial.print(qtr.calibrationOn.minimum[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+  // print the calibration maximum values measured when emitters were on
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    Serial.print(qtr.calibrationOn.maximum[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
+  Serial.println();
+  delay(1000);
 }
 
 const char song[] PROGMEM =
@@ -280,42 +312,24 @@ void processDataFromROS(){
   
 }
 
-// Prints a line with all the sensor readings to the serial
-// monitor.
-void printReadingsToSerial()
-{
-  char buffer[80];
-  sprintf(buffer, "%4d %4d %4d %4d %4d %c\n",
-    sensorValues[0],
-    sensorValues[1],
-    sensorValues[2],
-    sensorValues[3],
-    sensorValues[4],
-    useEmitters ? 'E' : 'e'
-  );
-  Serial.print(buffer);
-}
+// Update the reflectance sensors TODO 
+void QTRSensorUpdate(){
+  // read calibrated sensor values and obtain a measure of the line position
+  // from 0 to 5000 (for a white line, use readLineWhite() instead)
+  uint16_t position = qtr.readLineBlack(sensorValues);
 
-void updateLinesSnsors(){
-  static uint16_t lastSampleTime = 0;
-
-  if ((uint16_t)(millis() - lastSampleTime) >= 100)
+  // print the sensor values as numbers from 0 to 1000, where 0 means maximum
+  // reflectance and 1000 means minimum reflectance, followed by the line
+  // position
+  for (uint8_t i = 0; i < SensorCount; i++)
   {
-    lastSampleTime = millis();
-
-    // Read the line sensors.
-    lineSensors.read(sensorValues, useEmitters ? QTRReadMode::On : QTRReadMode::Off);
-
-    // Send the results to the LCD and to the serial monitor.
-    printReadingsToSerial();
+    Serial.print(sensorValues[i]);
+    Serial.print('\t');
   }
+  Serial.println(position);
 
-  // If button C is pressed, toggle the state of the emitters.
-  if (buttonC.getSingleDebouncedPress())
-  {
-    useEmitters = !useEmitters;
-  }
-  
+  delay(250);
+
 }
 
 void loop()
@@ -324,14 +338,15 @@ void loop()
   static bool enableDrive = false;
 
   balanceUpdate();
-
+  QTRSensorUpdate();
+  
   //Send the debug data (human readable) over the serial port. Probably better
   //to not do this while sending ROS packet, but it won't break anything
   //sendDebugData();
 
   sendDataToROS();
   processDataFromROS();
-  updateLineSensors();
+
 
 /*
   if (isBalancing())
