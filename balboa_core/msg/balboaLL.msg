@@ -9,8 +9,6 @@ int32 driveLeft
 int32 driveRight
 int32 speedLeft
 int32 speedRight
-int32 distanceLeft
-int32 distanceRight
 int32 encoderCountLeft
 int32 encoderCountRight
 int32 sensor1
