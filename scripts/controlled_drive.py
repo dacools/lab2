@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from lab1.msg import balboaLL # import balboa message
-from lab1.msg import pid_input # import pid_input message
+from lab2.msg import balboaLL # import balboa message
+from lab2.msg import pid_input # import pid_input message
 
 PI = 3.14159265358979 # global variable for PI
 
