@@ -14,7 +14,7 @@ def parse_dist_msg(data, self):
     self.pub.publish(self.mtrspeed) # Publish the motor speeds
 
 def parse_ang_vel_msg(data, self):
-    self.angle = data.control # unpack control effort
+    self.angle = -1.0 * data.control # unpack control effort
 
 class TheNode(object):
     # This class holds the rospy logic for summing the PID outputs and publishing 
@@ -38,7 +38,7 @@ class TheNode(object):
 
     def main_loop(self):
         # initialize subscriber nodes for messages from the pid controllers
-        rospy.Subscriber('/ang_vel_control', pid_output, parse_ang_vel_msg, self)
+        rospy.Subscriber('/ang_control', pid_output, parse_ang_vel_msg, self)
         rospy.Subscriber('/dist_control', pid_output, parse_dist_msg, self)
 
         rospy.spin() # wait for messages

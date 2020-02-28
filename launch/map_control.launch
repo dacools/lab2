@@ -9,35 +9,40 @@
     <param name="line_count" type="double" value="3"/>
 
   <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
-  <param name="distance/target" type="double" value="0.0"/>
-  <param name="angle/target" type="double" value="0.0"/>
+    <param name="distance/target" type="double" value="0.0"/>
+    <param name="angle/target" type="double" value="0.0"/>
 
   <remap from="/subscribe" to="/dist"/>
   <remap from="/control" to="/dist_control"/>
   <node pkg="lab2" name="dist_pid" type="pid.py"/>
   <!--These values have been tested-->
-  <param name="distance/P" type="double" value="0.07"/>
-  <param name="distance/I" type="double" value="0.0"/>
-  <param name="distance/D" type="double" value="0.1"/>
+    <param name="distance/P" type="double" value="0.04"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.02"/>
+    <!--<param name="distance/P" type="double" value="0.0"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.0"/>-->
 
   <remap from="/subscribe" to="/ang"/>
   <remap from="/control" to="/ang_control"/>
   <node pkg="lab2" name="ang_pid" type="pid.py"/>
   <!--These values have been tested-->
-  <param name="angle/P" type="double" value="1.0"/>
-  <param name="angle/I" type="double" value="0.0"/>
-  <param name="angle/D" type="double" value="0.0"/>
+    <param name="angle/P" type="double" value="0.12"/>
+    <param name="angle/I" type="double" value="0.0"/>
+    <param name="angle/D" type="double" value="0.01"/>
 
+ <!--
   <node pkg="lab2" name="ang_vel" type="ang_vel.py"/>
   <param name="angle_vel/target" type="double" value="90.0"/>
 
   <remap from="/subscribe" to="/ang_vel"/>
   <remap from="/control" to="/ang_vel_control"/>
   <node pkg="lab2" name="ang_vel_pid" type="pid.py"/>
-  <!--These values have been tested-->
+ 
   <param name="angle_vel/P" type="double" value="0.15"/>
   <param name="angle_vel/I" type="double" value="0.0"/>
-  <param name="angle_vel/D" type="double" value="0.0"/>
+  <param name="angle_vel/D" type="double" value="0.0"/>-->
+
 
   <node pkg="lab2" name="sum" type="sum.py"/>
 
