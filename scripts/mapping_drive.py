@@ -16,23 +16,21 @@ def parse_balboa_msg(data, self):
     self.angle = rospy.get_param("angle/target")
     line_distance = 300 # set the distance for a single line in the path navagation
     turn_angle = 180 # set the angle of turn
-    self.turn = 1 # start by turning CCW after driving straight
-    i = 0
 
     if abs(self.dist_current - self.distance) < 20 and abs(self.ang_current - self.angle) < 10:
-        if i > self.line_count:
+        if self.i > self.line_count:
             pass
-        elif self.state == 0: # state 0 means ready to go strait
+        elif self.state == 0: # state 0 means ready to go straight
             self.distance = self.distance + line_distance
             self.state = 1
-            i = i+1
+            self.i = self.i + 1
         elif self.state == 1: # state 1 means ready to turn
             if self.turn == 1: # turn 1 means turn CCW
                 self.angle = self.angle + turn_angle
-                self.turn = 0 # trun CW next time
+                self.turn = 0 # turn CW next time
             else:
                 self.angle = self.angle - turn_angle
-                self.turn = 1 # trun CCW next time
+                self.turn = 1 # turn CCW next time
                 
             self.state = 0 # ready to go straight again
             
@@ -53,8 +51,10 @@ class TheNode(object):
         self.angle = 0 # angle variable
         self.state = 0 # initialize a state variable
         self.line_count = rospy.get_param('line_count') # how many lines do we want to make?
+        self.turn = 1 # variable for current turn direction (turn CCW)
+        self.i = 0 # variable for current line
 
-         # Encoder count per revolution is gear motor ratio (3344/65)
+        # Encoder count per revolution is gear motor ratio (3344/65)
         # times gearbox ratio (2.14/1) times encoder revolution (12/1)
         CPR = (3344 / 65) * 2.14 * 12
 

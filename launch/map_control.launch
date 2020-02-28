@@ -31,19 +31,6 @@
     <param name="angle/I" type="double" value="0.0"/>
     <param name="angle/D" type="double" value="0.01"/>
 
- <!--
-  <node pkg="lab2" name="ang_vel" type="ang_vel.py"/>
-  <param name="angle_vel/target" type="double" value="90.0"/>
-
-  <remap from="/subscribe" to="/ang_vel"/>
-  <remap from="/control" to="/ang_vel_control"/>
-  <node pkg="lab2" name="ang_vel_pid" type="pid.py"/>
- 
-  <param name="angle_vel/P" type="double" value="0.15"/>
-  <param name="angle_vel/I" type="double" value="0.0"/>
-  <param name="angle_vel/D" type="double" value="0.0"/>-->
-
-
   <node pkg="lab2" name="sum" type="sum.py"/>
 
 </launch>
