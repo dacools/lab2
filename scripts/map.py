@@ -2,15 +2,8 @@
 import rospy
 from lab2.msg import balboaLL # import balboa message
 from lab2.msg import mapPacket # import mapPacket message
-from std_msgs.msg import Bool # import Bool
 
-def parse_balboa_msg(data, self):
-    # publish mapPacket
-    if data:
-        self.mapPub.publish(self.column)
-
-
-def parse_balboa_msg(data, self):
+def parse_line_sensor_msg(data, self):
     self.threshold = rospy.get_param('threshold') # get line threshold
 
     # update sensor array with message data
@@ -36,7 +29,7 @@ def parse_balboa_msg(data, self):
     self.column.i = self.column.i + 1
 
     # publish mapPacket
-    # self.mapPub.publish(self.column)
+    self.mapPub.publish(self.column)
 
 class TheNode(object):
     # This class holds the rospy logic for sending line sensor results 
@@ -58,7 +51,6 @@ class TheNode(object):
     def main_loop(self):
         # initialize subscriber node for messages from balboa robot
         rospy.Subscriber('balboaLL', balboaLL, parse_balboa_msg, self)
-        rospy.Subscriber('writer', Bool, parse_writer_msg, self)
 
         rospy.spin() # wait for messages
 
