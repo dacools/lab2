@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from lab2.msg import balboaLL # import balboa message
+from std_msgs.msg import Bool # import bool message
 
 PI = 3.14159265358979 # global variable for PI
 
@@ -14,9 +15,6 @@ def parse_balboa_msg(data, self):
     # retrieve the target parameters
     self.dist = rospy.get_param("distance/target")
     self.ang = rospy.get_param("angle/target")
-
-    '''line_distance = 300 # set the distance for a single line in the path navagation
-    turn_angle = 90 # set the angle of turn'''
 
     if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 13:
         step = self.seq[self.state] # get current sequence based on state
@@ -32,22 +30,6 @@ def parse_balboa_msg(data, self):
 
         self.state = self.state + 1
 
-        '''if self.i > self.line_count:
-            return
-        elif self.state == 0: # state 0 means ready to go straight
-            self.distance = self.distance + line_distance
-            self.state = 1
-            self.i = self.i + 1
-        elif self.state == 1: # state 1 means ready to turn
-            if self.turn == 1: # turn 1 means turn CCW
-                self.angle = self.angle + turn_angle
-                self.turn = 0 # turn CW next time
-            else:
-                self.angle = self.angle - turn_angle
-                self.turn = 1 # turn CCW next time
-                
-            self.state = 0 # ready to go straight again'''
-
     # set the target parameters
     rospy.set_param("distance/target",self.dist)
     rospy.set_param("angle/target",self.ang)
@@ -62,7 +44,9 @@ class TheNode(object):
 
         self.dist = 0 # distance variable
         self.ang = 0 # angle variable
-        self.state = 0 # initialize a state variable
+        self.state = 0 # init a state variable
+        self.mapping = false # init mapping variable
+        self.line = 0 # init line count variable
 
         # define mapping sequence
         seq1 = ['map1','turn','reverse','map2']
@@ -82,6 +66,9 @@ class TheNode(object):
 
         # Distance per encoder count is distPR / CPR
         self.DPC = distPR / CPR
+
+        # initialize publisher node for map writer
+        self.writer = rospy.Publisher('/writer', Bool, queue_size=10)
 
     def map1(self, delta):
         # update distance to map 1 cell
