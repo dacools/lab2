@@ -2,55 +2,59 @@
 import rospy
 from lab2.msg import balboaLL # import balboa message
 from lab2.msg import mapPacket # import mapPacket message
+import numpy as np
 
 def parse_line_sensor_msg(data, self):
-    self.threshold = rospy.get_param('threshold') # get line threshold
+    self.line = data.line
+    self.cell_number = data.cell
+    row = np.matrix([data.row1, data.row2, data.row3, data.row4, data.row5])
+    
+    if self.line < 6:
+        self.cell_map[6-self.i] = row
 
-    # update sensor array with message data
-    self.s[0] = data.sensor1
-    self.s[1] = data.sensor2
-    self.s[2] = data.sensor3
-    self.s[3] = data.sensor4
-    self.s[4] = data.sensor5
+        if self.line = 5:
+            self.finish = True
 
-    # check if greater than threshold and update map array
-    for i in range (0, 5):
-        if self.s[i] > self.threshold:
-            self.map[i] = 1
-        else:
-            self.map[i] = 0
+    if self.finish:
+        if self.cell_number = 1: # Center cell
+            self.IR_map[5:9][5:9] = self.cell_map
+        elif self.cell_number = 2: # Top center cell
+            self.IR_map[0:4][5:9] = np.rot90(self.cell_map)
+        elif self.cell_number = 3: # Top left cell
+            self.IR_map[0:4][0:4] = np.rot90(self.cell_map)
+        elif self.cell_number = 4: # Middle left cell
+            self.IR_map[5:9][0:4] = np.rot90(np.rot90(self.cell_map))
+        elif self.cell_number = 5: # Bottom left cell
+            self.IR_map[10:14][0:4] = np.rot90(np.rot90(self.cell_map))
+        elif self.cell_number = 6: # Bottom center cell
+            self.IR_map[10:14][5:9] = np.rot90(np.rot90(np.rot90(self.cell_map)))
+        elif self.cell_number = 7: # Bottom right cell
+            self.IR_map[10:14][10:14] = np.rot90(np.rot90(np.rot90(self.cell_map)))
+        elif self.cell_number = 8: # Middle right cell
+            self.IR_map[5:9][10:14] = self.cell_map
+        elif self.cell_number = 9: # Top right cell
+            self.IR_map[0:4][10:14] = self.cell_map  
 
-    # update mapPacket message with map values
-    self.column.row1 = self.map[0]
-    self.column.row2 = self.map[1]
-    self.column.row3 = self.map[2]
-    self.column.row4 = self.map[3]
-    self.column.row5 = self.map[4]
-    self.column.i = self.column.i + 1
-
-    # publish mapPacket
-    self.mapPub.publish(self.column)
+        self.finish = False # reset for a new cell
+        self.cell_number = self.cell_number + 1 # Iterate the cell number to the next cell
 
 class TheNode(object):
     # This class holds the rospy logic for sending line sensor results 
     # based on a published balboa message
 
     def __init__(self):
+        rospy.init_node('map') # intialize node
 
-        rospy.init_node('line_sensor') # intialize node
-
-        # initialize publisher node for map packets
-        self.mapPub = rospy.Publisher('/mapping', mapPacket, queue_size=10)
-
-        self.threshold = rospy.get_param('threshold') # init line threshold
-        self.map = [0, 0, 0, 0, 0] # init map array
-        self.s = [0, 0, 0, 0, 0] # init sensor array
-        self.column = mapPacket() # init default mapPacket message
-        self.column.i = 0
+        # Initialize the map matrix
+        self.IR_map = np.zeros((25,25))
+        self.cell_map = np.zeros((5,5))
+        self.cell_number = 1
+        self.line = 1
+        self.finish = False
 
     def main_loop(self):
-        # initialize subscriber node for messages from balboa robot
-        rospy.Subscriber('balboaLL', balboaLL, parse_balboa_msg, self)
+        # initialize subscriber node to receive mapping information
+        rospy.Subscriber('/mapping', mapPacket, parse_line_sensor_msg, self)
 
         rospy.spin() # wait for messages
 
