@@ -16,26 +16,36 @@ def parse_balboa_msg(data, self):
     self.dist = rospy.get_param("distance/target")
     self.ang = rospy.get_param("angle/target")
 
-    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 13:
-        step = self.seq[self.state] # get current sequence based on state
+    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 17:
+        # target location reached
+        if self.mapping and self.send:
+            self.writer.publish(True) # send line message
+            self.send = False
+        elif self.mapping and self.line < 6:
+            self.move(22) # move to next line
+            self.line = self.line + 1 # update line counter
+            self.send = True # send values
+        else:        
+            step = self.seq[self.state] # get current sequence based on state
 
-        if step == 'map1':
-            self.map1(110) # map 1 cell
-        elif step == 'turn':
-            self.turn(90) # turn 90 degrees
-        elif step == 'reverse':
-            self.reverse(110) # move backwards 1 cell
-        elif step == 'map2':
-            self.map2(220) # map 2 cells
+            if step == 'map1':
+                self.mapping = True # map 1 cell
+                self.line = 1
+            elif step == 'turn':
+                self.mapping = False
+                self.turn(90) # turn 90 degrees
+            elif step == 'reverse':
+                self.mapping = False
+                self.reverse(110) # move backwards 1 cell
 
-        self.state = self.state + 1
+            self.state = self.state + 1
 
-    # set the target parameters
-    rospy.set_param("distance/target",self.dist)
-    rospy.set_param("angle/target",self.ang)
+        # set the target parameters
+        rospy.set_param("distance/target",self.dist)
+        rospy.set_param("angle/target",self.ang)
 
 class TheNode(object):
-    # This class holds the rospy logic for the distance and angle target parameter 
+    # This class holds the rospy logic for updating the distance and angle target parameters 
     # based on a published balboa message and user input 
 
     def __init__(self):
@@ -45,17 +55,14 @@ class TheNode(object):
         self.dist = 0 # distance variable
         self.ang = 0 # angle variable
         self.state = 0 # init a state variable
-        self.mapping = false # init mapping variable
+        self.mapping = False # init mapping variable
+        self.send = False # init sending variable
         self.line = 0 # init line count variable
 
         # define mapping sequence
-        seq1 = ['map1','turn','reverse','map2']
-        seq2 = ['reverse','turn','map2']
+        seq1 = ['map1','turn','reverse','map1','map1']
+        seq2 = ['reverse','turn','map1','map1']
         self.seq = seq1 + seq2 + seq2 + seq2
-
-        '''self.line_count = rospy.get_param('line_count') # how many lines do we want to make?
-        self.turn = 1 # variable for current turn direction (turn CCW)
-        self.i = 0 # variable for current line'''
 
         # Encoder count per revolution is gear motor ratio (3344/65)
         # times gearbox ratio (2.14/1) times encoder revolution (12/1)
@@ -68,24 +75,19 @@ class TheNode(object):
         self.DPC = distPR / CPR
 
         # initialize publisher node for map writer
-        self.writer = rospy.Publisher('/writer', Bool, queue_size=10)
+        self.writer = rospy.Publisher('/line_queue', Bool, queue_size=10)
 
-    def map1(self, delta):
-        # update distance to map 1 cell
+    def move(self, delta):
+        # update distance target
         self.dist = self.dist + delta
 
     def turn(self, delta):
-        # update angle to turn
+        # update angle target
         self.ang = self.ang - delta
 
     def reverse(self, delta):
-        # call map1 function with negative value
-        self.map1(-1.0 * delta)
-
-    def map2(self, delta):
-        # call map1 function twice to map 2 cells
-        self.map1(delta / 2)
-        self.map1(delta / 2)
+        # call move function with negative value
+        self.move(-1.0 * delta)
 
     def main_loop(self):
         # initialize subscriber node for messages from balboa robot

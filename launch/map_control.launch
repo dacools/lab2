@@ -6,7 +6,8 @@
     <param name="threshold" type="double" value="1000.0"/>
 
   <node pkg="lab2" name="mapping_drive" type="mapping_drive.py"/>
-    <param name="line_count" type="double" value="0.0"/>
+
+  <node pkg="lab2" name="map" type="map.py"/>
 
   <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
     <param name="distance/target" type="double" value="0.0"/>

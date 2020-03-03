@@ -4,11 +4,17 @@ from lab2.msg import balboaLL # import balboa message
 from lab2.msg import mapPacket # import mapPacket message
 from std_msgs.msg import Bool # import Bool
 
-def parse_balboa_msg(data, self):
-    # publish mapPacket
+def parse_queue_msg(data, self):
     if data:
-        self.mapPub.publish(self.column)
+        # update line and cell numbers
+        if self.column.line < 6:
+            self.column.line = self.column.line + 1
+        else:
+            self.column.line = 1
+            self.column.cell = self.column.cell + 1
 
+        # publish mapPacket
+        self.mapPub.publish(self.column)
 
 def parse_balboa_msg(data, self):
     self.threshold = rospy.get_param('threshold') # get line threshold
@@ -33,7 +39,6 @@ def parse_balboa_msg(data, self):
     self.column.row3 = self.map[2]
     self.column.row4 = self.map[3]
     self.column.row5 = self.map[4]
-    self.column.i = self.column.i + 1
 
     # publish mapPacket
     # self.mapPub.publish(self.column)
@@ -53,12 +58,13 @@ class TheNode(object):
         self.map = [0, 0, 0, 0, 0] # init map array
         self.s = [0, 0, 0, 0, 0] # init sensor array
         self.column = mapPacket() # init default mapPacket message
-        self.column.i = 0
+        self.column.line = 0
+        self.column.cell = 1
 
     def main_loop(self):
         # initialize subscriber node for messages from balboa robot
         rospy.Subscriber('balboaLL', balboaLL, parse_balboa_msg, self)
-        rospy.Subscriber('writer', Bool, parse_writer_msg, self)
+        rospy.Subscriber('line_queue', Bool, parse_queue_msg, self)
 
         rospy.spin() # wait for messages
 
