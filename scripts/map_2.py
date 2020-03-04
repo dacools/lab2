@@ -10,7 +10,7 @@ def parse_line_sensor_msg(data, self):
     row = np.array([data.row1, data.row2, data.row3, data.row4, data.row5]) # unpack line vals
     
     if self.line < 26:
-        self.cell_map[25-self.line] = row # add row to cell matrix
+        self.cell_map[25 - self.line] = row # add row to cell matrix
         rospy.set_param("map/cell",self.cell_map.tolist()) # update cell rosparam
 
         if self.line == 25:
@@ -18,15 +18,15 @@ def parse_line_sensor_msg(data, self):
 
     if self.finished:
         if self.cell == 1: # 1st set of rows
-            self.IR_map[0:5] = self.cell_map(self.cell_map,k=1)
+            self.IR_map[0:5] = np.rot90(self.cell_map,k=1)
         elif self.cell == 2: # 2nd set of rows
-            self.IR_map[6:10] = np.rot90(self.cell_map,k=3)
+            self.IR_map[5:10] = np.rot90(self.cell_map,k=3)
         elif self.cell == 3: # 3rd set of rows
-            self.IR_map[10:15] = self.cell_map(self.cell_map,k=1)
+            self.IR_map[10:15] = np.rot90(self.cell_map,k=1)
         elif self.cell == 4: # 4th set of rows
             self.IR_map[15:20] = np.rot90(self.cell_map,k=3)
         elif self.cell == 5: # 5th set of rows
-            self.IR_map[20:25] = self.cell_map(self.cell_map,k=1)
+            self.IR_map[20:25] = np.rot90(self.cell_map,k=1)
          
 
         self.finished = False # reset for a new cell

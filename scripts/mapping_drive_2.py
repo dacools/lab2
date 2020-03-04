@@ -16,7 +16,7 @@ def parse_balboa_msg(data, self):
     self.dist = rospy.get_param("distance/target")
     self.ang = rospy.get_param("angle/target")
 
-    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 17:
+    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 37:
         width = 65 # IR sensor width is 65 mm, wheel base width is 110 mm
 
         # target location reached
@@ -38,10 +38,10 @@ def parse_balboa_msg(data, self):
                 self.turn(90) # turn 90 degrees
             elif step == 'reverseR':
                 self.mapping = False
-                self.reverse(25) # move backwards for right side
+                self.reverse(50) # move backwards for right side
             elif step == 'reverseL':
                 self.mapping = False
-                self.reverse(90) # move backwards for right side
+                self.reverse(180) # move backwards for left side
 
             self.state = self.state + 1
 
@@ -49,8 +49,9 @@ def parse_balboa_msg(data, self):
         rospy.set_param("distance/target",self.dist)
         rospy.set_param("angle/target",self.ang)
 
-    elif self.state == 16: # Show that we are done mapping
+    elif self.state == 37: # Show that we are done mapping
         self.move(200)
+        self.state = self.state + 1
 
         # set the target parameters
         rospy.set_param("distance/target",self.dist)
