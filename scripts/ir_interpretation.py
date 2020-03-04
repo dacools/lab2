@@ -5,7 +5,7 @@ from std_msgs.msg import Float32 # import Float32
 
 def parse_balboa_msg(data, self):
     self.IR = data.IR
-    
+    # Voltage is converted to distance (cm) (Less than 15 cm is not accurate)
     self.distance = self.P1*self.IR^4 + self.P2*self.IR^3 +self.P3*self.IR^2+self.P4*self.IR+self.P5
 
     self.irPub.publish(distance)
