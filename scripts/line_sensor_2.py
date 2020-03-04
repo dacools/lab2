@@ -7,7 +7,7 @@ from std_msgs.msg import Bool # import Bool
 def parse_queue_msg(data, self):
     if data:
         # update line and cell numbers
-        if self.column.line < 5:
+        if self.column.line < 25:
             self.column.line = self.column.line + 1
         else:
             self.column.line = 1
