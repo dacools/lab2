@@ -1,0 +1,37 @@
+<launch>
+
+  <node pkg="lab2" name="balboa_serial" type="balboa_serial.py"/>
+
+  <node pkg="lab2" name="line_sensor_2" type="line_sensor_2.py"/>
+    <param name="threshold" type="double" value="1000.0"/>
+
+  <node pkg="lab2" name="mapping_drive_2" type="mapping_drive_2.py"/>
+
+  <node pkg="lab2" name="map_2" type="map_2.py"/>
+
+  <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
+    <param name="distance/target" type="double" value="0.0"/>
+    <param name="angle/target" type="double" value="0.0"/>
+
+  <remap from="/subscribe" to="/dist"/>
+  <remap from="/control" to="/dist_control"/>
+  <node pkg="lab2" name="dist_pid" type="pid.py"/>
+  <!--These values have been tested-->
+    <param name="distance/P" type="double" value="0.04"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.02"/>
+    <!--<param name="distance/P" type="double" value="0.0"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.0"/>-->
+
+  <remap from="/subscribe" to="/ang"/>
+  <remap from="/control" to="/ang_control"/>
+  <node pkg="lab2" name="ang_pid" type="pid.py"/>
+  <!--These values have been tested-->
+    <param name="angle/P" type="double" value="0.12"/>
+    <param name="angle/I" type="double" value="0.0"/>
+    <param name="angle/D" type="double" value="0.01"/>
+
+  <node pkg="lab2" name="sum" type="sum.py"/>
+
+</launch>
