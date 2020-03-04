@@ -9,16 +9,26 @@ def parse_line_sensor_msg(data, self):
     self.cell = data.cell # unpack cell number
     row = np.array([data.row1, data.row2, data.row3, data.row4, data.row5]) # unpack line vals
     
-    if self.line < 26:
+    if self.line < 26 and (self.cell == 2 or self.cell == 4):
         self.cell_map[25 - self.line] = row # add row to cell matrix
         rospy.set_param("map/cell",self.cell_map.tolist()) # update cell rosparam
 
         if self.line == 25:
             self.finished = True # cell building finished
+    
+    elif self.line < 26:
+        self.cell_map[self.line-1] = row # add row to cell matrix
+        rospy.set_param("map/cell",self.cell_map.tolist()) # update cell rosparam
+
+        if self.line == 25:
+            self.finished = True # cell building finished
+
+
+
 
     if self.finished:
         if self.cell == 1: # 1st set of rows
-            self.IR_map[0:5] = np.rot90(self.cell_map,k=1)
+            self.IR_map[0:5] = np.rot90(self.cell_map,k=-1)
         elif self.cell == 2: # 2nd set of rows
             self.IR_map[5:10] = np.rot90(self.cell_map,k=3)
         elif self.cell == 3: # 3rd set of rows

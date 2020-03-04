@@ -3,7 +3,7 @@
   <node pkg="lab2" name="balboa_serial" type="balboa_serial.py"/>
 
   <node pkg="lab2" name="line_sensor_2" type="line_sensor_2.py"/>
-    <param name="threshold" type="double" value="1000.0"/>
+    <param name="threshold" type="double" value="1500.0"/>
 
   <node pkg="lab2" name="mapping_drive_2" type="mapping_drive_2.py"/>
 
