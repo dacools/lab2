@@ -20,21 +20,21 @@ def parse_line_sensor_msg(data, self):
         if self.cell == 1: # Center cell
             self.IR_map[5:10,5:10] = self.cell_map
         elif self.cell == 2: # Top center cell
-            self.IR_map[0:5,5:10] = np.rot90(self.cell_map,k=1)
-        elif self.cell == 3: # Top left cell
-            self.IR_map[0:5,0:5] = np.rot90(self.cell_map,k=1)
-        elif self.cell == 4: # Middle left cell
-            self.IR_map[5:10,0:5] = np.rot90(self.cell_map,k=2)
-        elif self.cell == 5: # Bottom left cell
-            self.IR_map[10:15,0:5] = np.rot90(self.cell_map,k=2)
+            self.IR_map[0:5,5:10] = np.rot90(self.cell_map,k=3)
+        elif self.cell == 3: # Top right cell
+            self.IR_map[0:5,10:15] = np.rot90(self.cell_map,k=3)
+        elif self.cell == 4: # Middle right cell
+            self.IR_map[5:10,10:15] = np.rot90(self.cell_map,k=2)
+        elif self.cell == 5: # Bottom right cell
+            self.IR_map[10:15,10:15] = np.rot90(self.cell_map,k=1)
         elif self.cell == 6: # Bottom center cell
-            self.IR_map[10:15,5:10] = np.rot90(self.cell_map,k=3)
-        elif self.cell == 7: # Bottom right cell
-            self.IR_map[10:15,10:15] = np.rot90(self.cell_map,k=3)
-        elif self.cell == 8: # Middle right cell
-            self.IR_map[5:10,10:15] = self.cell_map
-        elif self.cell == 9: # Top right cell
-            self.IR_map[0:5,10:15] = self.cell_map  
+            self.IR_map[10:15,5:10] = np.rot90(self.cell_map,k=1)
+        elif self.cell == 7: # Bottom left cell
+            self.IR_map[10:15,0:5] = np.rot90(self.cell_map,k=1)
+        elif self.cell == 8: # Middle left cell
+            self.IR_map[5:10,0:5] = self.cell_map
+        elif self.cell == 9: # Top left cell
+            self.IR_map[0:5,0:5] = self.cell_map  
 
         self.finished = False # reset for a new cell
         self.cell = self.cell + 1 # Iterate the cell number to the next cell
