@@ -7,7 +7,7 @@ from std_msgs.msg import Bool # import Bool
 def parse_queue_msg(data, self):
     if data:
         # update line and cell numbers
-        if self.column.line < 6:
+        if self.column.line < 5:
             self.column.line = self.column.line + 1
         else:
             self.column.line = 1
@@ -58,8 +58,8 @@ class TheNode(object):
         self.map = [0, 0, 0, 0, 0] # init map array
         self.s = [0, 0, 0, 0, 0] # init sensor array
         self.column = mapPacket() # init default mapPacket message
-        self.column.line = 0
-        self.column.cell = 1
+        self.column.line = 0 # init line number
+        self.column.cell = 1 # init cell number
 
     def main_loop(self):
         # initialize subscriber node for messages from balboa robot

@@ -7,36 +7,38 @@ import numpy as np # import numpy library
 def parse_line_sensor_msg(data, self):
     self.line = data.line # unpack line number
     self.cell = data.cell # unpack cell number
-    row = np.matrix([data.row1, data.row2, data.row3, data.row4, data.row5]) # unpack line vals
+    row = np.array([data.row1, data.row2, data.row3, data.row4, data.row5]) # unpack line vals
     
     if self.line < 6:
-        self.cell_map[6-self.i] = row # add row to cell matrix
+        self.cell_map[5-self.line] = row # add row to cell matrix
+        rospy.set_param("map/cell",self.cell_map.tolist()) # update cell rosparam
 
         if self.line == 5:
             self.finished = True # cell building finished
 
-    if self.finish:
+    if self.finished:
         if self.cell == 1: # Center cell
-            self.IR_map[5:9][5:9] = self.cell_map
+            self.IR_map[5:10,5:10] = self.cell_map
         elif self.cell == 2: # Top center cell
-            self.IR_map[0:4][5:9] = np.rot90(self.cell_map)
+            self.IR_map[0:5,5:10] = np.rot90(self.cell_map,k=1)
         elif self.cell == 3: # Top left cell
-            self.IR_map[0:4][0:4] = np.rot90(self.cell_map)
+            self.IR_map[0:5,0:5] = np.rot90(self.cell_map,k=1)
         elif self.cell == 4: # Middle left cell
-            self.IR_map[5:9][0:4] = np.rot90(np.rot90(self.cell_map))
+            self.IR_map[5:10,0:5] = np.rot90(self.cell_map,k=2)
         elif self.cell == 5: # Bottom left cell
-            self.IR_map[10:14][0:4] = np.rot90(np.rot90(self.cell_map))
+            self.IR_map[10:15,0:5] = np.rot90(self.cell_map,k=2)
         elif self.cell == 6: # Bottom center cell
-            self.IR_map[10:14][5:9] = np.rot90(np.rot90(np.rot90(self.cell_map)))
+            self.IR_map[10:15,5:10] = np.rot90(self.cell_map,k=3)
         elif self.cell == 7: # Bottom right cell
-            self.IR_map[10:14][10:14] = np.rot90(np.rot90(np.rot90(self.cell_map)))
+            self.IR_map[10:15,10:15] = np.rot90(self.cell_map,k=3)
         elif self.cell == 8: # Middle right cell
-            self.IR_map[5:9][10:14] = self.cell_map
+            self.IR_map[5:10,10:15] = self.cell_map
         elif self.cell == 9: # Top right cell
-            self.IR_map[0:4][10:14] = self.cell_map  
+            self.IR_map[0:5,10:15] = self.cell_map  
 
         self.finished = False # reset for a new cell
         self.cell = self.cell + 1 # Iterate the cell number to the next cell
+        rospy.set_param("map/full",self.IR_map.tolist()) # update map rosparam
 
 class TheNode(object):
     # This class holds the rospy logic for compiling line sensor results 
@@ -45,11 +47,14 @@ class TheNode(object):
     def __init__(self):
         rospy.init_node('map') # intialize node
 
-        self.IR_map = np.zeros((25,25)) # Init map matrix
-        self.cell_map = np.zeros((5,5)) # Init cell matrix
+        self.IR_map = np.zeros([15,15],dtype=int) # Init map matrix
+        self.cell_map = np.zeros([5,5],dtype=int) # Init cell matrix
         self.cell = 1 # init cell number
         self.line = 1 # init line number
         self.finished = False # init cell building bool
+
+        rospy.set_param("map/full",self.IR_map.tolist()) # init map rosparam
+        rospy.set_param("map/cell",self.cell_map.tolist()) # init cell rosparam
 
     def main_loop(self):
         # initialize subscriber node to receive mapping information
