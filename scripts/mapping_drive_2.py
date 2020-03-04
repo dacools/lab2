@@ -17,15 +17,13 @@ def parse_balboa_msg(data, self):
     self.ang = rospy.get_param("angle/target")
 
     if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 17:
-        width = 65 #the width of the IR sensor is 65 mm, the width of the wheel base is 110 mm
-        rev =  width + 25
+        width = 65 # IR sensor width is 65 mm, wheel base width is 110 mm
 
         # target location reached
         if self.mapping and self.send:
             self.writer.publish(True) # send line message
             self.send = False
         elif self.mapping and self.line < 6:
-            # self.move(22) # move to next line
             self.move(width/5) # move to next line
             self.line = self.line + 1 # update line counter
             self.send = True # send values
@@ -38,10 +36,12 @@ def parse_balboa_msg(data, self):
             elif step == 'turn':
                 self.mapping = False
                 self.turn(90) # turn 90 degrees
-            elif step == 'reverse':
+            elif step == 'reverseR':
                 self.mapping = False
-                self.reverse(rev) # move backwards 1 cell
-                # self.reverse(110) # move backwards 1 cell
+                self.reverse(25) # move backwards for right side
+            elif step == 'reverseL':
+                self.mapping = False
+                self.reverse(90) # move backwards for right side
 
             self.state = self.state + 1
 
@@ -49,14 +49,11 @@ def parse_balboa_msg(data, self):
         rospy.set_param("distance/target",self.dist)
         rospy.set_param("angle/target",self.ang)
 
-    elif self.state>16: # Show that we are done mapping
+    elif self.state == 16: # Show that we are done mapping
         self.move(200)
-        self.state = 1
 
         # set the target parameters
         rospy.set_param("distance/target",self.dist)
-
-
 
     rospy.set_param("debug/mapping",self.mapping)
     rospy.set_param("debug/send",self.send)
@@ -80,9 +77,10 @@ class TheNode(object):
         self.line = 0 # init line count variable
 
         # define mapping sequence
-        seq1 = ['map1','turn','reverse','map1','map1']
-        seq2 = ['reverse','turn','map1','map1']
-        self.seq = seq1 + seq2 + seq2 + seq2
+        seq1 = ['map1','map1','map1','map1','map1']
+        seq2 = ['turn','reverseR','turn']
+        seq3 = ['turn','reverseL','turn']
+        self.seq = seq1 + seq2 + seq1 + seq3 + seq1 + seq2 + seq1 + seq3 + seq1
 
         # Encoder count per revolution is gear motor ratio (3344/65)
         # times gearbox ratio (2.14/1) times encoder revolution (12/1)
