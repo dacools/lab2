@@ -16,3 +16,4 @@ int32 sensor2
 int32 sensor3
 int32 sensor4
 int32 sensor5
+int32 IR
