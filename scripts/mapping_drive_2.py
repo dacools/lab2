@@ -16,7 +16,7 @@ def parse_balboa_msg(data, self):
     self.dist = rospy.get_param("distance/target")
     self.ang = rospy.get_param("angle/target")
 
-    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 37:
+    if abs(dist_curr - self.dist) < 10 and abs(ang_curr - self.ang) < 2 and self.state < 21: #37:
         width = 65 # IR sensor width is 65 mm, wheel base width is 110 mm
 
         # target location reached
@@ -41,7 +41,7 @@ def parse_balboa_msg(data, self):
                 self.reverse(50) # move backwards for right side
             elif step == 'reverseL':
                 self.mapping = False
-                self.reverse(180) # move backwards for left side
+                self.reverse(200) # move backwards for left side
 
             self.state = self.state + 1
 
@@ -49,7 +49,7 @@ def parse_balboa_msg(data, self):
         rospy.set_param("distance/target",self.dist)
         rospy.set_param("angle/target",self.ang)
 
-    elif self.state == 37: # Show that we are done mapping
+    elif self.state == 21: # Show that we are done mapping
         self.move(200)
         self.state = self.state + 1
 
@@ -81,7 +81,7 @@ class TheNode(object):
         seq1 = ['map1','map1','map1','map1','map1']
         seq2 = ['turn','reverseR','turn']
         seq3 = ['turn','reverseL','turn']
-        self.seq = seq1 + seq2 + seq1 + seq3 + seq1 + seq2 + seq1 + seq3 + seq1
+        self.seq = seq1 + seq2 + seq1 + seq3 + seq1 #+ seq2 + seq1 + seq3 + seq1
 
         # Encoder count per revolution is gear motor ratio (3344/65)
         # times gearbox ratio (2.14/1) times encoder revolution (12/1)

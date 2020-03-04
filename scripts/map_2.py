@@ -33,10 +33,10 @@ def parse_line_sensor_msg(data, self):
             self.IR_map[5:10] = np.rot90(self.cell_map,k=3)
         elif self.cell == 3: # 3rd set of rows
             self.IR_map[10:15] = np.rot90(self.cell_map,k=1)
-        elif self.cell == 4: # 4th set of rows
-            self.IR_map[15:20] = np.rot90(self.cell_map,k=3)
-        elif self.cell == 5: # 5th set of rows
-            self.IR_map[20:25] = np.rot90(self.cell_map,k=1)
+        # elif self.cell == 4: # 4th set of rows
+        #     self.IR_map[15:20] = np.rot90(self.cell_map,k=3)
+        # elif self.cell == 5: # 5th set of rows
+        #     self.IR_map[20:25] = np.rot90(self.cell_map,k=1)
          
 
         self.finished = False # reset for a new cell
@@ -50,7 +50,7 @@ class TheNode(object):
     def __init__(self):
         rospy.init_node('map') # intialize node
 
-        self.IR_map = np.zeros([25,25],dtype=int) # Init map matrix
+        self.IR_map = np.zeros([15,25],dtype=int) # Init map matrix
         self.cell_map = np.zeros([25,5],dtype=int) # Init cell matrix
         self.cell = 1 # init cell number
         self.line = 1 # init line number
