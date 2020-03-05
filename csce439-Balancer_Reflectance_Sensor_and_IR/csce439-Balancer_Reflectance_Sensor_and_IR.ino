@@ -56,7 +56,6 @@ void setup()
   ledRed(1);
   balanceSetup();
   ledRed(0);
-  int IR_pin = ADC8; // set up the ADC8 pin as the analog read pin
   
   Serial.begin(57600);
   Serial.println("Done starting up.");
@@ -150,7 +149,7 @@ void sendDebugData(){
  uint32_t sensor5 = sensorValues[4];
 
  // read the IR range finder data
- uint32_t IR = analogRead(IR_pin);
+ uint32_t IR = analogRead(A8);
 
  Serial.println("\r\n----");
  Serial.print("Millis: "); Serial.println(millis());
@@ -211,7 +210,7 @@ void sendDataToROS(){
   uint32_t sensor5 = sensorValues[4];
 
   // read the IR range finder data
-  uint32_t IR = analogRead(IR_pin);
+  uint32_t IR = analogRead(A8);
 
   //Start out with the checksum non-zero
   uint8_t checksum = 0xCD;
