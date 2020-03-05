@@ -5,7 +5,7 @@ from std_msgs.msg import Float32 # import Float32
 def parse_ir_distance_msg(data, self):
     self.dist_target = rospy.get_param("distance/target")
     self.distance = data
-    diff = self.target - self.distance # compute how far off the following target is
+    diff = self.target - float(self.distance) # compute how far off the following target is
 
     # Determine if the difference is enough to make the robot want to move
     if diff > 5:
