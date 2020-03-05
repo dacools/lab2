@@ -92,6 +92,7 @@ class TheNode(object):
       msg.sensor3 = self.readFourByteAndChecksum()
       msg.sensor4 = self.readFourByteAndChecksum()
       msg.sensor5 = self.readFourByteAndChecksum()
+      msg.IR = self.readFourByteAndChecksum()
       # msg.sensorState = self.readFourByteAndChecksum()
 
 
