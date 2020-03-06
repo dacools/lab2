@@ -43,8 +43,10 @@ Balboa32U4LineSensors lineSensors;
 // Reflectance Sensors
 const uint8_t SensorCount = 5;
 uint16_t sensorValues[SensorCount];
-
 bool useEmitters = true;
+
+// IR Range Finder Pin
+const int IRPin = A6;
 
 void setup()
 {
@@ -149,7 +151,7 @@ void sendDebugData(){
  uint32_t sensor5 = sensorValues[4];
 
  // read the IR range finder data
- uint32_t IR = analogRead(A8);
+ uint32_t IR = analogRead(IRPin);
 
  Serial.println("\r\n----");
  Serial.print("Millis: "); Serial.println(millis());
@@ -210,7 +212,7 @@ void sendDataToROS(){
   uint32_t sensor5 = sensorValues[4];
 
   // read the IR range finder data
-  uint32_t IR = analogRead(A8);
+  uint32_t IR = analogRead(IRPin);
 
   //Start out with the checksum non-zero
   uint8_t checksum = 0xCD;

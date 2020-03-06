@@ -10,7 +10,6 @@ int32_t angleRateX; // degrees/s
 int32_t gZZero;
 int32_t angleZ; // millidegrees
 int32_t angleRateZ; // degrees/s
-
 int32_t distanceLeft;
 int32_t speedLeft;
 int32_t driveLeft;
