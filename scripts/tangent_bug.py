@@ -2,6 +2,7 @@
 import rospy
 from lab2.msg import balboaLL # import balboa message
 from std_msgs.msg import Float32 # import Float32
+import numpy as np
 
 def parse_balboa_msg(data, self):
     # Get the current and target distances
@@ -39,33 +40,9 @@ def parse_ir_distance_msg(data, self):
 
 
 
-
-
-
-
-    if self.react:
-        self.react = False # reset reaction
-        
-        self.ir_dist = data.data # get current ir distance
-        diff = self.ir_target - self.ir_dist # compute ir target error
-        off = False # debugging
-
-        if self.ir_dist < 15:
-            # out of calibration range, do nothing
-            off = True
-        elif self.ir_dist > 60:
-            # out of useful range, do nothing
-            off = True
-        elif diff > 2:
-            self.dist_target = self.dist_target + 5 # add offset to distance target
-        elif diff < -2:
-            self.dist_target = self.dist_target - 5 # subtract offset to distance target
-
         rospy.set_param('distance/target',self.dist_target) # publish new distance target
         rospy.set_param('angle/target',self.ang_target) # publish new distance target
 
-        rospy.set_param('debug/diff',diff)
-        rospy.set_param('debug/off',off)
 
 class TheNode(object):
     # This class holds the rospy logic for navigating around an object like the tangent bug algorithm 
@@ -87,7 +64,7 @@ class TheNode(object):
         self.scan = True # Tell the robot to scan
 
         # Initialize a matrix for the distances and angles
-        self.angles_and_distances = np.matrix([[15., 0.0], [10., 0.0], [5., 0.0], [0., 0.0], [-5., 0.0], [-10., 0.0], [-15., 0.0]])
+        self.angles_and_distances = np.array([[15., 0.0], [10., 0.0], [5., 0.0], [0., 0.0], [-5., 0.0], [-10., 0.0], [-15., 0.0]])
 
 
 
