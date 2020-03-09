@@ -1,0 +1,31 @@
+<launch>
+
+  <node pkg="lab2" name="balboa_serial" type="balboa_serial.py"/>
+
+  <node pkg="lab2" name="ir_interpretation" type="ir_interpretation.py"/>
+
+  <node pkg="lab2" name="tangent_bug" type="tangent_bug.py"/>
+
+  <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
+    <param name="distance/target" type="double" value="0.0"/>
+    <param name="angle/target" type="double" value="0.0"/>
+
+  <remap from="/subscribe" to="/dist"/>
+  <remap from="/control" to="/dist_control"/>
+  <node pkg="lab2" name="dist_pid" type="pid.py"/>
+  <!--These values have been tested-->
+    <param name="distance/P" type="double" value="0.04"/>
+    <param name="distance/I" type="double" value="0.0"/>
+    <param name="distance/D" type="double" value="0.02"/>
+
+  <remap from="/subscribe" to="/ang"/>
+  <remap from="/control" to="/ang_control"/>
+  <node pkg="lab2" name="ang_pid" type="pid.py"/>
+  <!--These values have been tested-->
+    <param name="angle/P" type="double" value="0.12"/>
+    <param name="angle/I" type="double" value="0.0"/>
+    <param name="angle/D" type="double" value="0.01"/>
+
+  <node pkg="lab2" name="sum" type="sum.py"/>
+
+</launch>
