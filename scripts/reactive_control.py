@@ -6,7 +6,7 @@ from std_msgs.msg import Float32 # import Float32
 def parse_balboa_msg(data, self):
     curr_ms = data.arduinoMillis
     if curr_ms - self.last_ms > 100:
-        # one second since last reaction
+        # one-tenth second since last reaction
         self.react = True
         self.last_ms = curr_ms
 
