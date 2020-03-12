@@ -4,49 +4,93 @@ from lab2.msg import balboaLL # import balboa message
 from std_msgs.msg import Float32 # import Float32
 import numpy as np # import numpy library
 
+PI = 3.14159265358979 # global variable for PI
+
 def parse_balboa_msg(data, self):
     curr_ms = data.arduinoMillis
-    if curr_ms - self.last_ms > 1000:
-        # one second since last reaction
-        self.react = True
-        self.last_ms = curr_ms
+    # if curr_ms - self.last_ms > 1000:
+    #     # one second since last reaction
+    #     self.react = True
+    #     self.last_ms = curr_ms
 
     # Get the current and target distances
     self.dist_current = data.encoderCountRight # unpack right encoder
     self.dist_goal = rospy.get_param('bug/dist_goal') # get distance goal from user
     self.dist_target = rospy.get_param('distance/target') # get distance target from user
     self.dist_current = self.dist_current * self.DPC # convert encoder distance to mm
-    self.dist_diff = self.dist_goal - self.dist_current # calculate distance goal error
+    self.dist_diff = self.dist_target - self.dist_current # calculate distance goal error
 
     # Get the current and target angles
     self.ang_current = data.angleX # unpack angle X
     self.ang_goal = rospy.get_param('bug/dist_goal') # get angle goal from user
     self.ang_target = rospy.get_param('angle/target') # get angle target from user
     self.ang_current = self.ang_current / 1000 # convert angle from millidegrees to degrees
-    self.ang_diff = self.ang_goal - self.ang_current # calculate angle goal error
-
+    self.ang_diff = self.ang_target - self.ang_current # calculate angle goal error
 
 def parse_ir_distance_msg(data, self):
     self.dist_target = rospy.get_param('distance/target') # get current distance target
+    self.ang_target = rospy.get_param('angle/target') # get angle target from user
+    self.ir_dist = data.data # get current ir distance
+    if self.ir_dist > 50:
+        self.ir_dist = 50
 
     # Scanning algorithm: turn to +15 degrees, measure the distance, turn -5 degrees, measure distance, 
     # repeate until -15 degrees. select the angle with the greatest distance and the lowest angle. 
     # if the angle is less than 0, subtract 3 degrees, else add 3 degrees from the selected angle.
     # Travel to the distance -30 then scan again. Repeat
+    # if there is nothing measured within a distance of greater than X, Travel X toward the goal, \
+    # then measure the objects again. 
 
-    if abs(dist_diff) < 10:
+    if abs(self.dist_diff) < 10 and abs(self.ang_diff) < 2:
         self.scan = True 
+    else:
+        self.scan = False
 
     if self.scan:
         # Turn to +15
-        if self.i == 0:
-            self.ang_target = self.ang_target + 15
+        if self.state == 'turn_right_to_start_scan':
+            self.ang_target = 15 # Turn to the right 15 degrees
+            self.state = 'turn_left_x_degrees'
 
-            self.i = self.i + 1
+        # Turn to -5 degrees until all the measurments have been read
+        elif self.state == 'turn_left_x_degrees':
+            self.scan_locations[self.i][1] = self.ir_dist # Measure the ir distance
+            self.ang_target = self.ang_target - 5 # Turn to the left 5 degrees
+            if self.i == 6:
+                self.state = 'turn_to_best_angle'
+                self.i = 0 # reset i
+            else:
+                self.i = self.i + 1 # increment i
 
-        rospy.set_param('distance/target',self.dist_target) # publish new distance target
+        elif self.state == 'turn_to_best_angle':
+            for x in range(0,7):
+                # Find the best distance
+                if float(self.scan_locations[x][1]) > self.best_dist: 
+                    self.best_dist = float(self.scan_locations[x][1])
+                    self.best_angle = float(self.scan_locations[x][0])
+                # if there are more than one best distance, find the best angle
+                elif float(self.scan_locations[x][1]) == self.best_dist:
+                    if abs(float(self.scan_locations[x][0])) < self.best_angle:
+                        self.best_angle = float(self.scan_locations[x][0])
+
+            # Check to see if the best angle is to the left or right of the object
+            if self.best_angle >= 0:
+                self.ang_target = self.ang_target + 15 + self.best_angle + 3  # Turn to the best angle + 3 degrees
+                self.state = 'move_to_best_dist'
+            else:
+                self.ang_target = self.ang_target + 15 + self.best_angle - 3  # Turn to the best angle - 3 degrees
+                self.state = 'move_to_best_dist'
+        
+        # move to the new target distance
+        elif self.state == 'move_to_best_dist':
+            self.dist_target = self.dist_target + self.best_dist + 5 # move to the best distance + 5 cm
+            self.state = 'turn_right_to_start_scan'
+            self.best_angle = 0            
+
+        rospy.set_param('distance/target',-1*self.dist_target) # publish new distance target
         rospy.set_param('angle/target',self.ang_target) # publish new distance target
 
+        rospy.set_param('debug/state',self.state) # publish the state
 
 class TheNode(object):
     # This class holds the rospy logic for navigating around an object like the tangent bug algorithm 
@@ -67,6 +111,10 @@ class TheNode(object):
         self.scan = True # init scan variable
         self.react = False # init variable to delay reaction
         self.last_ms = 0 # init millis variable
+        self.best_dist = 0.0 # init the best distance to travel
+        self.best_angle = 0.0 # init the best angle
+
+        self.state = 'turn_right_to_start_scan' # init the state to turn to the right x degrees
 
         self.i = 0
 

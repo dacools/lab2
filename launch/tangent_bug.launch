@@ -5,8 +5,10 @@
   <node pkg="lab2" name="ir_interpretation" type="ir_interpretation.py"/>
 
   <node pkg="lab2" name="tangent_bug" type="tangent_bug.py"/>
-    <param name="bug/dist_goal" type="double" value="0.0"/>
+    <param name="bug/dist_goal" type="double" value="300.0"/>
     <param name="bug/ang_goal" type="double" value="0.0"/>
+
+    <param name="debug/state" type="string" value=""/>
 
   <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
     <param name="distance/target" type="double" value="0.0"/>
