@@ -9,6 +9,10 @@
     <param name="bug/ang_goal" type="double" value="0.0"/>
 
     <param name="debug/state" type="string" value=""/>
+    <param name="debug/dist_diff" type="double" value="0.0"/>
+    <param name="debug/angle_diff" type="double" value="0.0"/>
+    <param name="debug/best_angle" type="double" value="0.0"/>
+    <param name="debug/best_dist" type="double" value="0.0"/>
 
   <node pkg="lab2" name="controlled_drive" type="controlled_drive.py"/>
     <param name="distance/target" type="double" value="0.0"/>
@@ -26,7 +30,7 @@
   <remap from="/control" to="/ang_control"/>
   <node pkg="lab2" name="ang_pid" type="pid.py"/>
   <!--These values have been tested-->
-    <param name="angle/P" type="double" value="0.12"/>
+    <param name="angle/P" type="double" value="0.2"/>
     <param name="angle/I" type="double" value="0.0"/>
     <param name="angle/D" type="double" value="0.01"/>
 
