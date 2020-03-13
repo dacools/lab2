@@ -3,6 +3,7 @@ import rospy
 from lab2.msg import balboaLL # import balboa message
 from std_msgs.msg import Float32 # import Float32
 import numpy as np # import numpy library
+import math
 
 PI = 3.14159265358979 # global variable for PI
 
@@ -54,8 +55,7 @@ def parse_ir_distance_msg(data, self):
 
         # Turn to -5 degrees until all the measurments have been read
         elif self.state == 'turn_left_x_degrees':
-            self.scan_locations[self.i][1] = float(self.ir_dist) # Measure the ir distance            
-            # self.ang_target = self.ang_target - 5 # Turn to the left 5 degrees
+            self.scan_locations[self.i][1] = float(self.ir_dist) # Measure the ir distance
             if self.i == 6:
                 self.state = 'turn_to_best_angle'
                 self.i = 0 # reset i
@@ -74,17 +74,19 @@ def parse_ir_distance_msg(data, self):
                     if abs(float(self.scan_locations[x][0])) < self.best_angle:
                         self.best_angle = float(self.scan_locations[x][0])
 
+            # calculate how much to change the angle in order to get around the object
+            self.avoid_object = math.degrees(math.atan(120/self.best_dist))
             # Check to see if the best angle is to the left or right of the object
             if self.best_angle >= 0:
-                self.ang_target = self.best_angle + 5.0  # Turn to the best angle + 3 degrees
+                self.ang_target = self.best_angle + self.avoid_object  # Turn to the best angle avoiding the object
                 self.state = 'move_to_best_dist'
             else:
-                self.ang_target = self.best_angle - 5.0  # Turn to the best angle - 3 degrees
+                self.ang_target = self.best_angle - self.avoid_object  # Turn to the best angle avoiding the object
                 self.state = 'move_to_best_dist'
         
         # move to the new target distance
         elif self.state == 'move_to_best_dist':
-            self.dist_target = self.dist_target - self.best_dist - 5 # move to the best distance + 5 cm
+            self.dist_target = self.dist_target - self.best_dist - 50 # move to the best distance + 5 cm
             self.state = 'turn_right_to_start_scan'
             self.best_angle = 0.0
             self.best_dist = 0.0            
@@ -119,8 +121,9 @@ class TheNode(object):
         self.scan = True # init scan variable
         self.react = False # init variable to delay reaction
         # self.last_ms = 0 # init millis variable
-        self.best_dist = 0.0 # init the best distance to travel
+        self.best_dist = 1 # init the best distance to travel
         self.best_angle = 0.0 # init the best angle
+        self.avoid_object = 0.0 # init the extra angle to be added to the best angle to avoid objects
 
         self.state = 'turn_right_to_start_scan' # init the state to turn to the right x degrees
 
