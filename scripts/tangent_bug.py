@@ -9,10 +9,6 @@ PI = 3.14159265358979 # global variable for PI
 
 def parse_balboa_msg(data, self):
     curr_ms = data.arduinoMillis
-    # if curr_ms - self.last_ms > 1000:
-    #     # one second since last reaction
-    #     self.react = True
-    #     self.last_ms = curr_ms
 
     # Get the current and target distances
     self.dist_current = data.encoderCountRight # unpack right encoder
@@ -35,11 +31,12 @@ def parse_ir_distance_msg(data, self):
     if self.ir_dist > 500:
         self.ir_dist = 500
 
-    # Scanning algorithm: turn to +15 degrees, measure the distance, turn -5 degrees, measure distance, 
+    # Scanning algorithm: 
+    # turn to +15 degrees, measure the distance, turn -5 degrees, measure distance, 
     # repeate until -15 degrees. select the angle with the greatest distance and the lowest angle. 
-    # if the angle is less than 0, subtract 3 degrees, else add 3 degrees from the selected angle.
-    # Travel to the distance -30 then scan again. Repeat
-    # if there is nothing measured within a distance of greater than X, Travel X toward the goal, \
+    # add some angle to the lowest angle so that it avoids the object.
+    # Travel to the distance then scan again. Repeat
+    # if there is nothing measured within a distance of greater than 50, Travel 50 toward the goal, 
     # then measure the objects again. 
 
     if abs(self.dist_diff) <= 10 and abs(self.ang_diff) <= 1:
@@ -94,7 +91,7 @@ def parse_ir_distance_msg(data, self):
         rospy.set_param('distance/target',self.dist_target) # publish new distance target
         rospy.set_param('angle/target',self.ang_target) # publish new distance target
         self.scan = False # reset the scanner
-# TODO problems: negative distance, does not select the correct best angle and distance
+        
     # Debug parameters
     rospy.set_param('debug/state',self.state) # publish the state
     rospy.set_param('debug/dist_diff',self.dist_diff) # publish the distance_diff
@@ -108,7 +105,6 @@ class TheNode(object):
     def __init__(self):
 
         rospy.init_node('tangent_bug') # intialize node
-
         self.dist_goal = rospy.get_param('bug/dist_goal') # init distance goal
         self.ang_goal = rospy.get_param('bug/ang_goal') # init angle goal
         self.dist_target = rospy.get_param('distance/target') # init distance target
@@ -119,14 +115,10 @@ class TheNode(object):
         self.ang_diff = 0.0 # init angle difference variable
         self.ir_dist = 0.0 # init ir distance variable
         self.scan = True # init scan variable
-        self.react = False # init variable to delay reaction
-        # self.last_ms = 0 # init millis variable
         self.best_dist = 1 # init the best distance to travel
         self.best_angle = 0.0 # init the best angle
         self.avoid_object = 0.0 # init the extra angle to be added to the best angle to avoid objects
-
         self.state = 'turn_right_to_start_scan' # init the state to turn to the right x degrees
-
         self.i = 0
 
         # Initialize a matrix for the distances and angles
