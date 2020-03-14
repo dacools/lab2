@@ -56,12 +56,6 @@ def parse_balboa_msg(data, self):
         # set the target parameters
         rospy.set_param("distance/target",self.dist)
 
-    # rospy.set_param("debug/mapping",self.mapping)
-    # rospy.set_param("debug/send",self.send)
-    # rospy.set_param("debug/line",self.line)
-    # rospy.set_param("debug/state",self.state)
-    # rospy.set_param("debug/step",self.seq[self.state - 1])
-
 class TheNode(object):
     # This class holds the rospy logic for updating the distance and angle target parameters 
     # based on a published balboa message and user input 

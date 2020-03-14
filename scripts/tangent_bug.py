@@ -3,7 +3,7 @@ import rospy
 from lab2.msg import balboaLL # import balboa message
 from std_msgs.msg import Float32 # import Float32
 import numpy as np # import numpy library
-import math
+import math # import math library
 
 PI = 3.14159265358979 # global variable for PI
 
@@ -12,14 +12,12 @@ def parse_balboa_msg(data, self):
 
     # Get the current and target distances
     self.dist_current = data.encoderCountRight # unpack right encoder
-    # self.dist_goal = rospy.get_param('bug/dist_goal') # get distance goal from user
     self.dist_target = rospy.get_param('distance/target') # get distance target from user
     self.dist_current = self.dist_current * self.DPC # convert encoder distance to mm
     self.dist_diff = self.dist_target - self.dist_current # calculate distance goal error
 
     # Get the current and target angles
     self.ang_current = data.angleX # unpack angle X
-    # self.ang_goal = rospy.get_param('bug/dist_goal') # get angle goal from user
     self.ang_target = rospy.get_param('angle/target') # get angle target from user
     self.ang_current = self.ang_current / 1000 # convert angle from millidegrees to degrees
     self.ang_diff = self.ang_target - self.ang_current # calculate angle goal error
@@ -27,7 +25,7 @@ def parse_balboa_msg(data, self):
 def parse_ir_distance_msg(data, self):
     self.dist_target = rospy.get_param('distance/target') # get current distance target
     self.ang_target = rospy.get_param('angle/target') # get angle target from user
-    self.ir_dist = data.data*10 # get current ir distance in mm
+    self.ir_dist = data.data*10 # convert ir distance to mm
     if self.ir_dist > 500:
         self.ir_dist = 500
 
@@ -73,6 +71,7 @@ def parse_ir_distance_msg(data, self):
 
             # calculate how much to change the angle in order to get around the object
             self.avoid_object = math.degrees(math.atan(120/self.best_dist))
+
             # Check to see if the best angle is to the left or right of the object
             if self.best_angle >= 0:
                 self.ang_target = self.best_angle + self.avoid_object  # Turn to the best angle avoiding the object
@@ -91,13 +90,6 @@ def parse_ir_distance_msg(data, self):
         rospy.set_param('distance/target',self.dist_target) # publish new distance target
         rospy.set_param('angle/target',self.ang_target) # publish new distance target
         self.scan = False # reset the scanner
-        
-    # Debug parameters
-    rospy.set_param('debug/state',self.state) # publish the state
-    rospy.set_param('debug/dist_diff',self.dist_diff) # publish the distance_diff
-    rospy.set_param('debug/angle_diff',self.ang_diff) # publish the angle_diff
-    rospy.set_param('debug/best_angle',self.best_angle) # publish the best distance
-    rospy.set_param('debug/best_dist',self.best_dist) # publish the best angle
 
 class TheNode(object):
     # This class holds the rospy logic for navigating around an object like the tangent bug algorithm 
@@ -105,8 +97,7 @@ class TheNode(object):
     def __init__(self):
 
         rospy.init_node('tangent_bug') # intialize node
-        self.dist_goal = rospy.get_param('bug/dist_goal') # init distance goal
-        self.ang_goal = rospy.get_param('bug/ang_goal') # init angle goal
+
         self.dist_target = rospy.get_param('distance/target') # init distance target
         self.ang_target = rospy.get_param('angle/target') # init angle target
         self.ang_current = 0.0 # init angle variable

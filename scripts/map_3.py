@@ -25,9 +25,6 @@ def parse_line_sensor_msg(data, self):
         if self.line == columns:
             self.finished = True # cell building finished
 
-
-
-
     if self.finished:
         if self.cell == 1: # 1st set of rows
             self.IR_map[0:15,0:5] = self.cell_map
